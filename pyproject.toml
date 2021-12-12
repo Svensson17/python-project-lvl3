@@ -3,9 +3,14 @@ name = "hexlet-code"
 version = "0.1.0"
 description = ""
 authors = ["Svennson17 <kiryl.shvedau@gmail.com>"]
+packages = [
+  { include = "page_loader" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+pytest = "^6.2.5"
+requests = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^4.0.1"
@@ -13,3 +18,6 @@ flake8 = "^4.0.1"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+brain-games = "page_loader.scripts.page_loader:main"
