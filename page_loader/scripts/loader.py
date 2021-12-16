@@ -1,6 +1,14 @@
+from page_loader.parsering import parse_data
+
+from page_loader.downloader import download
+
+
 def main():
-    args =
-    result =
+    args = parse_data()
+    result = download(
+        args.url,
+        args.path,
+    )
     print(result)
 
 
