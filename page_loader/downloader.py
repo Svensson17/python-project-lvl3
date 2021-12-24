@@ -8,21 +8,20 @@ import os
 def download(url, path):
     request = requests.get(url)
     response = request.text
-    parsed_url = urlparse(url)
-    edited_url = parsed_url.netloc
+    edited_url = urlparse(url).netloc
     folder_files_name = make_new_file_name(edited_url) + '_files'
     my_path = os.getcwd()
     my_path = os.path.join(my_path, folder_files_name)
     if not os.path.isdir(folder_files_name):
         os.mkdir(folder_files_name)
     complete_file = path + make_new_file_name(edited_url) + '.html'
-    html = download_image(response, url, edited_url, my_path, folder_files_name)
+    html = download_resource(response, url, my_path, folder_files_name)
     with open(complete_file, 'w') as file:
         file.write(html)
     return complete_file
 
 
-def download_image(response, url, edited_url,  my_path, folder_files_name):
+def download_resource(response, url, my_path, folder_files_name):
     soup = BeautifulSoup(response, 'html.parser')
     tags = soup.find_all(['script', 'img', 'link'])
     for tag in tags:
@@ -36,23 +35,27 @@ def download_image(response, url, edited_url,  my_path, folder_files_name):
         if urlparse(short_url).netloc:
             continue
         request = requests.get(full_url)
-        parsed_url = urlparse(full_url)
-        edited_url = parsed_url.netloc + parsed_url.path
-        new_file_name = make_new_file_name(edited_url)
+        edited_url = urlparse(full_url).netloc + urlparse(full_url).path
+        new_file_name = add_extension_to_file(edited_url)
         name = os.path.join(my_path, new_file_name)
         with open(name, 'wb') as file:
             file.write(request.content)
         tag['src'] = folder_files_name + '/' + new_file_name
+        tag['href'] = folder_files_name + '/' + new_file_name
     return soup.prettify()
 
 
-def make_new_file_name(short_url):
+def add_extension_to_file(short_url):
     parsed_short_url = urlparse(short_url)
     file_name = os.path.basename(parsed_short_url.path)
     name = os.path.splitext(file_name)[0]
     extension = os.path.splitext(file_name)[1]
-    new_name = re.sub(r'([^a-zA-Z0-9])', '-', name)
-    return new_name + extension
+    name = make_new_file_name(name)
+    return name + extension
+
+
+def make_new_file_name(name):
+    return re.sub(r'([^a-zA-Z0-9])', '-', name)
 
 
 def find_attribute(tag):
