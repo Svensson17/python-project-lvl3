@@ -9,12 +9,12 @@ def download(url, path):
     request = requests.get(url)
     response = request.text
     edited_url = urlparse(url).netloc
-    folder_files_name = make_new_file_name(edited_url) + '_files'
+    folder_files_name = make_file_name(edited_url) + '_files'
     my_path = os.getcwd()
     my_path = os.path.join(my_path, folder_files_name)
     if not os.path.isdir(folder_files_name):
         os.mkdir(folder_files_name)
-    complete_file = path + make_new_file_name(edited_url) + '.html'
+    complete_file = path + make_file_name(edited_url) + '.html'
     html = download_resource(response, url, my_path, folder_files_name)
     with open(complete_file, 'w') as file:
         file.write(html)
@@ -36,7 +36,7 @@ def download_resource(response, url, my_path, folder_files_name):
             continue
         request = requests.get(full_url)
         edited_url = urlparse(full_url).netloc + urlparse(full_url).path
-        new_file_name = add_extension_to_file(edited_url)
+        new_file_name = edit_file_with_extension(edited_url)
         name = os.path.join(my_path, new_file_name)
         with open(name, 'wb') as file:
             file.write(request.content)
@@ -45,16 +45,16 @@ def download_resource(response, url, my_path, folder_files_name):
     return soup.prettify()
 
 
-def add_extension_to_file(short_url):
-    parsed_short_url = urlparse(short_url)
-    file_name = os.path.basename(parsed_short_url.path)
+def edit_file_with_extension(edited_url):
+    parsed_edited_url = urlparse(edited_url)
+    file_name = os.path.basename(parsed_edited_url.path)
     name = os.path.splitext(file_name)[0]
     extension = os.path.splitext(file_name)[1]
-    name = make_new_file_name(name)
+    name = make_file_name(name)
     return name + extension
 
 
-def make_new_file_name(name):
+def make_file_name(name):
     return re.sub(r'([^a-zA-Z0-9])', '-', name)
 
 
