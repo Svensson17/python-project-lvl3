@@ -1,15 +1,19 @@
 from page_loader.parsering import parse_data
-
 from page_loader.downloader import download
+import logging
 
 
 def main():
     args = parse_data()
-    result = download(
-        args.url,
-        args.path,
-    )
-    print(result)
+    logging.basicConfig(level=logging.INFO)
+    try:
+        result = download(
+            args.url,
+            args.path
+        )
+        print(result)
+    except Exception as e:
+        logging.error(e)
 
 
 if __name__ == "__main__":

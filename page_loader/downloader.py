@@ -3,22 +3,24 @@ from urllib.parse import urlparse
 import re
 from bs4 import BeautifulSoup
 import os
+import logging
 
 
-def download(url, path):
+def download(url, path=''):
     request = requests.get(url)
+    logging.info('Request done {}'.format(url))
     response = request.text
-    edited_url = urlparse(url).netloc
-    folder_files_name = make_file_name(edited_url) + '_files'
-    my_path = os.getcwd()
-    my_path = os.path.join(my_path, folder_files_name)
-    if not os.path.isdir(folder_files_name):
-        os.mkdir(folder_files_name)
-    complete_file = path + make_file_name(edited_url) + '.html'
-    html = download_resource(response, url, my_path, folder_files_name)
-    with open(complete_file, 'w') as file:
+    complete_file = get_file_name(url)
+    folder_files_name = get_dir_name(url)
+    full_path = os.path.join(os.getcwd(), path)
+    file_path = full_path + complete_file
+    asset_path = full_path + folder_files_name
+    if not os.path.isdir(asset_path):
+        os.mkdir(asset_path)
+    html = download_resource(response, url, asset_path, folder_files_name)
+    with open(file_path, 'w') as file:
         file.write(html)
-    return complete_file
+    return file_path
 
 
 def download_resource(response, url, my_path, folder_files_name):
@@ -36,22 +38,13 @@ def download_resource(response, url, my_path, folder_files_name):
             continue
         request = requests.get(full_url)
         edited_url = urlparse(full_url).netloc + urlparse(full_url).path
-        new_file_name = edit_file_with_extension(edited_url)
+        new_file_name = get_file_name(edited_url)
         name = os.path.join(my_path, new_file_name)
         with open(name, 'wb') as file:
             file.write(request.content)
         tag['src'] = folder_files_name + '/' + new_file_name
         tag['href'] = folder_files_name + '/' + new_file_name
     return soup.prettify()
-
-
-def edit_file_with_extension(edited_url,):
-    parsed_edited_url = urlparse(edited_url)
-    file_name = os.path.basename(parsed_edited_url.path)
-    name = os.path.splitext(file_name)[0]
-    extension = os.path.splitext(file_name)[1]
-    name = make_file_name(name)
-    return name + extension
 
 
 def make_file_name(name):
@@ -63,3 +56,20 @@ def find_attribute(tag):
         return 'href'
     else:
         return 'src'
+
+
+def get_file_name(url):
+    filename, ext = url_to_slug_and_ext(url)
+    return filename + ext
+
+
+def url_to_slug_and_ext(url):
+    result_url_parse = urlparse(url)
+    path, ext = os.path.splitext(result_url_parse.path)
+    result = make_file_name(result_url_parse.netloc + path)
+    return result, ext if ext else '.html'
+
+
+def get_dir_name(url):
+    filename, ext = url_to_slug_and_ext(url)
+    return filename + '_files'
