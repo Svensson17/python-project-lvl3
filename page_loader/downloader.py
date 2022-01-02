@@ -45,7 +45,7 @@ def download_resource(response, url, my_path, folder_files_name):
     return soup.prettify()
 
 
-def edit_file_with_extension(edited_url):
+def edit_file_with_extension(edited_url,):
     parsed_edited_url = urlparse(edited_url)
     file_name = os.path.basename(parsed_edited_url.path)
     name = os.path.splitext(file_name)[0]
