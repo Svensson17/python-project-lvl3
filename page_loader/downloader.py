@@ -6,6 +6,7 @@ import os
 import logging
 
 
+
 def download(url, path=''):
     request = requests.get(url)
     logging.info('Request done {}'.format(url))
