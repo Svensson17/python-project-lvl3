@@ -4,19 +4,20 @@ import re
 from bs4 import BeautifulSoup
 import os
 import logging
-
+from progress.bar import Bar
 
 
 def download(url, path=''):
     request = requests.get(url)
     logging.info('Request done {}'.format(url))
+    request.raise_for_status()
     response = request.text
     complete_file = get_file_name(url)
     folder_files_name = get_dir_name(url)
     full_path = os.path.join(os.getcwd(), path)
-    file_path = full_path + complete_file
-    asset_path = full_path + folder_files_name
-    if not os.path.isdir(asset_path):
+    file_path = os.path.join(full_path, complete_file)
+    asset_path = os.path.join(full_path, folder_files_name)
+    if not os.path.exists(asset_path):
         os.mkdir(asset_path)
     html = download_resource(response, url, asset_path, folder_files_name)
     with open(file_path, 'w') as file:
@@ -27,15 +28,18 @@ def download(url, path=''):
 def download_resource(response, url, my_path, folder_files_name):
     soup = BeautifulSoup(response, 'html.parser')
     tags = soup.find_all(['script', 'img', 'link'])
+    bar = Bar('process', max=len(tags))
     for tag in tags:
         if find_attribute(tag) == 'href':
             short_url = tag.get('href')
         else:
             short_url = tag.get('src')
         if short_url is None:
+            bar.next()
             continue
         full_url = url + short_url
         if urlparse(short_url).netloc:
+            bar.next()
             continue
         request = requests.get(full_url)
         edited_url = urlparse(full_url).netloc + urlparse(full_url).path
@@ -45,6 +49,8 @@ def download_resource(response, url, my_path, folder_files_name):
             file.write(request.content)
         tag['src'] = folder_files_name + '/' + new_file_name
         tag['href'] = folder_files_name + '/' + new_file_name
+        bar.next()
+    bar.finish()
     return soup.prettify()
 
 
