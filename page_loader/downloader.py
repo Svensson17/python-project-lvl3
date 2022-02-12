@@ -1,5 +1,5 @@
 import requests
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 import re
 from bs4 import BeautifulSoup
 import os
@@ -30,25 +30,20 @@ def download_resource(response, url, my_path, folder_files_name):
     tags = soup.find_all(['script', 'img', 'link'])
     bar = Bar('process', max=len(tags))
     for tag in tags:
-        if find_attribute(tag) == 'href':
-            short_url = tag.get('href')
-        else:
-            short_url = tag.get('src')
+        attribute_name = find_attribute(tag)
+        short_url = tag.get(attribute_name)
         if short_url is None:
             bar.next()
             continue
-        full_url = url + short_url
-        if urlparse(short_url).netloc:
-            bar.next()
-            continue
-        request = requests.get(full_url)
-        edited_url = urlparse(full_url).netloc + urlparse(full_url).path
-        new_file_name = get_file_name(edited_url)
-        name = os.path.join(my_path, new_file_name)
-        with open(name, 'wb') as file:
-            file.write(request.content)
-        tag['src'] = folder_files_name + '/' + new_file_name
-        tag['href'] = folder_files_name + '/' + new_file_name
+        full_url = urljoin(url, short_url)
+        if urlparse(full_url).netloc == urlparse(url).netloc:
+            request = requests.get(full_url)
+            edited_url = urlparse(full_url).netloc + urlparse(full_url).path
+            new_file_name = get_file_name(edited_url)
+            name = os.path.join(my_path, new_file_name)
+            with open(name, 'wb') as file:
+                file.write(request.content)
+            tag[attribute_name] = os.path.join(folder_files_name, new_file_name)
         bar.next()
     bar.finish()
     return soup.prettify()
