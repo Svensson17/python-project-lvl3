@@ -1,6 +1,7 @@
 import os
 from urllib.parse import urljoin
 import tempfile
+import pytest
 from page_loader.downloader import download
 
 HTML_FILE_NAME = 'site-com-blog-about.html'
@@ -13,11 +14,11 @@ ASSETS = [
         'url_path': '/blog/about/assets/styles.css',
         'file_name': 'site-com-blog-about-assets-styles.css',
     },
-    # {
-    #     'format': 'svg',
-    #     'url_path': '/photos/me.jpg',
-    #     'file_name': 'site-com-photos-me.jpg',
-    # },
+    {
+        'format': 'svg',
+        'url_path': '/photos/me.jpg',
+        'file_name': 'site-com-photos-me.jpg',
+    },
     {
         'format': 'js',
         'url_path': '/assets/scripts.js',
@@ -49,7 +50,6 @@ def get_fixtures_path(filename):
 
 def test_page_loader(requests_mock):
     content = get_fixture_data(HTML_FILE_NAME)
-    print(content)
     requests_mock.get(PAGE_URL, text=content)
     for asset in ASSETS:
         assets_url = urljoin(BASE_URL, asset['url_path'])
@@ -61,3 +61,25 @@ def test_page_loader(requests_mock):
         assert not os.listdir(temp_dirname)
         output_file_path = download(PAGE_URL, temp_dirname)
         assert len(os.listdir(temp_dirname)) == 2
+        assert len(os.listdir(os.path.join(temp_dirname, ASSETS_DIR_NAME))) == 4
+        html_file_path = os.path.join(temp_dirname, HTML_FILE_NAME)
+        assert html_file_path == output_file_path
+        html_content = read(html_file_path)
+        expected_html_content = read(output_file_path)
+        assert html_content == expected_html_content
+
+
+def test_storage_errors(requests_mock):
+    requests_mock.get(PAGE_URL)
+    with pytest.raises(Exception):
+        assert download(PAGE_URL, '/sys')
+        assert download(PAGE_URL, 'error')
+
+
+@pytest.mark.parametrize('code', [404, 500])
+def test_response_with_error(requests_mock, code):
+    requests_mock.get(PAGE_URL, status_code=code)
+    with tempfile.TemporaryDirectory() as temp_dirname:
+        with pytest.raises(Exception):
+            assert download(PAGE_URL, temp_dirname)
+

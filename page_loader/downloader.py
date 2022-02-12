@@ -30,7 +30,7 @@ def download_resource(response, url, my_path, folder_files_name):
     tags = soup.find_all(['script', 'img', 'link'])
     bar = Bar('process', max=len(tags))
     for tag in tags:
-        attribute_name = find_attribute(tag)
+        attribute_name = find_attribute(tag.name)
         short_url = tag.get(attribute_name)
         if short_url is None:
             bar.next()
