@@ -82,4 +82,3 @@ def test_response_with_error(requests_mock, code):
     with tempfile.TemporaryDirectory() as temp_dirname:
         with pytest.raises(Exception):
             assert download(PAGE_URL, temp_dirname)
-
