@@ -53,7 +53,9 @@ def test_page_loader(requests_mock):
     requests_mock.get(PAGE_URL, text=content)
     for asset in ASSETS:
         assets_url = urljoin(BASE_URL, asset['url_path'])
-        expected_asset_path = get_fixtures_path(os.path.join('expected', ASSETS_DIR_NAME, asset['file_name']))
+        expected_asset_path = get_fixtures_path(
+            os.path.join('expected', ASSETS_DIR_NAME, asset['file_name'])
+        )
         expected_asset_content = read(expected_asset_path, 'rb')
         asset['content'] = expected_asset_content
         requests_mock.get(assets_url, content=expected_asset_content)
@@ -61,7 +63,9 @@ def test_page_loader(requests_mock):
         assert not os.listdir(temp_dirname)
         output_file_path = download(PAGE_URL, temp_dirname)
         assert len(os.listdir(temp_dirname)) == 2
-        assert len(os.listdir(os.path.join(temp_dirname, ASSETS_DIR_NAME))) == 4
+        assert len(
+            os.listdir(os.path.join(temp_dirname, ASSETS_DIR_NAME))
+        ) == 4
         html_file_path = os.path.join(temp_dirname, HTML_FILE_NAME)
         assert html_file_path == output_file_path
         html_content = read(html_file_path)

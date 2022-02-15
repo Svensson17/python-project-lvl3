@@ -43,7 +43,10 @@ def download_resource(response, url, my_path, folder_files_name):
             name = os.path.join(my_path, new_file_name)
             with open(name, 'wb') as file:
                 file.write(request.content)
-            tag[attribute_name] = os.path.join(folder_files_name, new_file_name)
+            tag[attribute_name] = os.path.join(
+                folder_files_name,
+                new_file_name
+            )
         bar.next()
     bar.finish()
     return soup.prettify()
