@@ -29,6 +29,7 @@ def download_resource(response, url, my_path, folder_files_name):
     soup = BeautifulSoup(response, 'html.parser')
     tags = soup.find_all(['script', 'img', 'link'])
     bar = Bar('process', max=len(tags))
+
     for tag in tags:
         attribute_name = find_attribute(tag.name)
         short_url = tag.get(attribute_name)
@@ -36,6 +37,7 @@ def download_resource(response, url, my_path, folder_files_name):
             bar.next()
             continue
         full_url = urljoin(url, short_url)
+
         if urlparse(full_url).netloc == urlparse(url).netloc:
             request = requests.get(full_url)
             edited_url = urlparse(full_url).netloc + urlparse(full_url).path
